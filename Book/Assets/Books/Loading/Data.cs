@@ -1,3 +1,4 @@
+using Books.Loading.View;
 using System;
 using UnityEngine;
 
@@ -6,14 +7,8 @@ namespace Books.Loading
     [Serializable]
     public struct Data
     {
-        [SerializeField] private float _showHideDuration;
-        [SerializeField] private CanvasGroup _canvasGroup;
-        [SerializeField] private Transform _spinnerView;
-        [SerializeField] private float _rotateSpeed;
+        [SerializeField] public View.Screen _screen;
 
-        public readonly float ShowHideDuration => _showHideDuration;
-        public readonly CanvasGroup CanvasGroup => _canvasGroup;
-        public readonly Transform SpinnerView => _spinnerView;
-        public readonly float RotationSpeed => _rotateSpeed;
+        public readonly IScreen Screen => _screen;
     }
 }

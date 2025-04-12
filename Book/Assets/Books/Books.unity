@@ -696,16 +696,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _data:
-    _loadingScreenData:
-      _showHideDuration: 0.25
-      _canvasGroup: {fileID: 1465513086}
-      _spinnerView: {fileID: 1662875774}
-      _rotateSpeed: 15
     _loadingData:
       _showHideDuration: 0.25
       _canvasGroup: {fileID: 1465513086}
       _spinnerView: {fileID: 1662875774}
       _rotateSpeed: 15
+      _screen: {fileID: 1465513091}
     _storyScreenData:
       _rootTransform: {fileID: 2116386167}
       _storyBubble: {fileID: 1024384150}
@@ -1220,6 +1216,7 @@ GameObject:
   - component: {fileID: 1465513088}
   - component: {fileID: 1465513087}
   - component: {fileID: 1465513086}
+  - component: {fileID: 1465513091}
   m_Layer: 5
   m_Name: FaderCanvas
   m_TagString: Untagged
@@ -1323,6 +1320,22 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &1465513091
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1465513085}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a003718ec2ae62241b4e88538a81fb6f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _showHideDuration: 0.25
+  _canvasGroup: {fileID: 1465513086}
+  _spinnerView: {fileID: 1662875774}
+  _rotateSpeed: 15
 --- !u!1 &1636364208
 GameObject:
   m_ObjectHideFlags: 0

@@ -14,23 +14,15 @@ namespace Books.Loading
 
         private Ctx _ctx;
 
-        private readonly Logic _loadingScreenLogic;
-
         public Entity(Ctx ctx)
         {
             _ctx = ctx;
-
-            _loadingScreenLogic = new Logic(new Logic.Ctx
-            {
-                OnUpdate = _ctx.OnUpdate,
-                Data = _ctx.Data,
-            }).AddTo(this);
         }
 
-        public void ShowImmediate() => _loadingScreenLogic.ShowImmediate();
-        public void HideImmediate() => _loadingScreenLogic.HideImmediate();
+        public void ShowImmediate() => _ctx.Data.Screen.ShowImmediate();
+        public void HideImmediate() => _ctx.Data.Screen.HideImmediate();
 
-        public async UniTask Show() => await _loadingScreenLogic.Show();
-        public async UniTask Hide() => await _loadingScreenLogic.Hide();
+        public async UniTask Show() => await _ctx.Data.Screen.Show();
+        public async UniTask Hide() => await _ctx.Data.Screen.Hide();
     }
 }
