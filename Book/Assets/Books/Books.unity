@@ -697,13 +697,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _data:
     _loadingData:
-      _showHideDuration: 0.25
-      _canvasGroup: {fileID: 1465513086}
-      _spinnerView: {fileID: 1662875774}
-      _rotateSpeed: 15
       _screen: {fileID: 1465513091}
-    _storyScreenData:
-      _rootTransform: {fileID: 2116386167}
+    _storyData:
       _storyBubble: {fileID: 1024384150}
 --- !u!4 &404478306
 Transform:

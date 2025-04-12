@@ -1,5 +1,7 @@
 using Cysharp.Threading.Tasks;
 using Shared.Disposable;
+using Shared.LocalCache;
+using UnityEngine;
 
 namespace Books 
 {
@@ -29,10 +31,21 @@ namespace Books
             //load some data here...
 
             var storyPath = "story.json";
-            var storyText = await new AssetRequests().GetText(storyPath);
+            var storyText = string.Empty;
+            if (Cacher.IsCached(storyPath))
+            {
+                Debug.Log($"Local");
+                storyText = Cacher.TextFromCache(storyPath);
+            }
+            else
+            {
+                Debug.Log($"Remote");
+                storyText = Cacher.ToCache(await new AssetRequests().GetText(storyPath), storyPath);
+            }
+
             var storyScreen = new Story.Entity(new Story.Entity.Ctx
             {
-                Data = _ctx.Data.StoriesScreenData,
+                Data = _ctx.Data.StoriesData,
                 StoryText = storyText,
             }).AddTo(this);
 
