@@ -1,6 +1,5 @@
 using Cysharp.Threading.Tasks;
 using Shared.Disposable;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -10,13 +9,11 @@ namespace Books.Story
     {
         public struct Ctx
         {
-            public Data Data;
+            public View.IBubble Bubble;
             public string StoryText;
         }
 
         private readonly Ctx _ctx;
-
-        private readonly Stack<GameObject> _units;
 
         private Ink.Runtime.Story _story;
 
@@ -24,9 +21,7 @@ namespace Books.Story
         {
             _ctx = ctx;
 
-            _units = new();
-
-            _ctx.Data.StoryBubble.gameObject.SetActive(false);
+            _ctx.Bubble.GameObject.SetActive(false);
         }
 
         public async UniTask ShowStoryProcess()
@@ -39,12 +34,11 @@ namespace Books.Story
             var storyInProgress = true;
             while (storyInProgress)
             {
-                ClearAll();
-                View.Bubble storyBubble = null;
+                _ctx.Bubble.GameObject.SetActive(false);
+
                 while (_story.canContinue)
                 {
-                    ClearAll();
-                    storyBubble = null;
+                    _ctx.Bubble.GameObject.SetActive(false);
 
                     if (!_story.Continue().TryProcessLine(out var header, out var attributes, out var body)) continue;
 
@@ -86,7 +80,7 @@ namespace Books.Story
                     if (headerForLogic == mainCharacter.ToLower()) side = View.Bubble.Side.Left;
                     else if (headerForLogic == "...") side = View.Bubble.Side.Center;
 
-                    storyBubble = CreateStoryBubble(side, header, body);
+                    _ctx.Bubble.UpdateText(side, header, body);
 
                     if (_story.canContinue)
                     {
@@ -101,59 +95,24 @@ namespace Books.Story
                 {
                     var waitChoice = true;
 
-                    if (storyBubble == null)
-                        storyBubble = CreateStoryBubble(View.Bubble.Side.Center, string.Empty, string.Empty);
-
                     var buttons = _story.currentChoices.Select(c => (c.text, c.index)).ToArray();
-                    storyBubble.UpdateButtons(idx =>
+                    _ctx.Bubble.UpdateButtons(idx =>
                     {
                         _story.ChooseChoiceIndex(idx);
                         waitChoice = false;
                     }, buttons);
 
-                    if (buttons.Length == 1 && buttons[0].text.Trim().ToLower() == "играть")
-                    {
-                        _story.ChooseChoiceIndex(buttons[0].index);
-                        waitChoice = false;
-                    }
-                    else
-                    {
-                        while (waitChoice)
-                            await UniTask.NextFrame();
+                    while (waitChoice)
+                        await UniTask.NextFrame();
 
-                        await UniTask.Delay(100);
-                    }
+                    await UniTask.Delay(100);
                 }
                 else
                 {
-                    ClearAll();
+                    _ctx.Bubble.GameObject.SetActive(false);
                     _story = new Ink.Runtime.Story(_ctx.StoryText);
                 }
             }
-        }
-
-        private View.Bubble CreateStoryBubble(View.Bubble.Side side, string header, string body)
-        {
-            var storyBubble = UnityEngine.Object.Instantiate(_ctx.Data.StoryBubble);
-            storyBubble.transform.SetParent(_ctx.Data.StoryBubble.transform.parent, false);
-            storyBubble.gameObject.SetActive(true);
-            storyBubble.UpdateText(side, header, body);
-
-            _units.Push(storyBubble.gameObject);
-
-            return storyBubble;
-        }
-
-        protected override void OnDispose()
-        {
-            ClearAll();
-            base.OnDispose();
-        }
-
-        private void ClearAll()
-        {
-            while (_units.TryPop(out var unitGO))
-                UnityEngine.Object.Destroy(unitGO);
         }
     }
 }
