@@ -4,7 +4,7 @@ using Shared.Reactive;
 
 namespace Books 
 {
-    public class Entity : BaseDisposable
+    internal sealed class Entity : BaseDisposable
     {
         public struct Ctx
         {
@@ -23,13 +23,13 @@ namespace Books
 
         public async UniTask AsyncProcess()
         {
-            var loadingScreen = new LoadingScreen.LoadingScreen.Entity(new LoadingScreen.LoadingScreen.Entity.Ctx
+            var loading = new Loading.Entity(new Loading.Entity.Ctx
             {
                 OnUpdate = _ctx.OnUpdate,
-                Data = _ctx.Data.LoadingScreenData,
+                Data = _ctx.Data.LoadingData,
             }).AddTo(this);
 
-            loadingScreen.ShowImmediate();
+            loading.ShowImmediate();
 
             //load some data here...
 
@@ -42,7 +42,7 @@ namespace Books
                 StoryText = storyText,
             }).AddTo(this);
 
-            await loadingScreen.Hide();
+            await loading.Hide();
 
             await storyScreen.ShowStoryProcess();
         }

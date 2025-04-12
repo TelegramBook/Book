@@ -701,6 +701,11 @@ MonoBehaviour:
       _canvasGroup: {fileID: 1465513086}
       _spinnerView: {fileID: 1662875774}
       _rotateSpeed: 15
+    _loadingData:
+      _showHideDuration: 0.25
+      _canvasGroup: {fileID: 1465513086}
+      _spinnerView: {fileID: 1662875774}
+      _rotateSpeed: 15
     _storyScreenData:
       _rootTransform: {fileID: 2116386167}
       _storyBubble: {fileID: 1024384150}

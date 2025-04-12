@@ -4,12 +4,12 @@ using UnityEngine;
 namespace Books 
 {
     [Serializable]
-    public struct Data
+    internal struct Data
     {
-        [SerializeField] private LoadingScreen.LoadingScreen.Data _loadingScreenData;
+        [SerializeField] private Loading.Data _loadingData;
         [SerializeField] private Story.StoryScreen.Data _storyScreenData;
 
-        public readonly LoadingScreen.LoadingScreen.Data LoadingScreenData => _loadingScreenData;
+        public readonly Loading.Data LoadingData => _loadingData;
         public readonly Story.StoryScreen.Data StoriesScreenData => _storyScreenData;
     }
 }
