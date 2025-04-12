@@ -1,12 +1,23 @@
 using Cysharp.Threading.Tasks;
 using Shared.Disposable;
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using UnityEngine;
 
-namespace Books.Story 
+namespace Books.Story
 {
-    internal class Logic : BaseDisposable
+    internal partial class Logic : BaseDisposable
     {
+        [AttributeUsage(AttributeTargets.Method)]
+        private class LogicAttribute : Attribute
+        {
+            public string Name { get; }
+            public LogicAttribute(string name) => Name = name;
+        }
+
         public struct Ctx
         {
             public View.IBubble Bubble;
@@ -17,6 +28,8 @@ namespace Books.Story
 
         private Ink.Runtime.Story _story;
 
+        private string _mainCharacter;
+
         public Logic(Ctx ctx)
         {
             _ctx = ctx;
@@ -26,11 +39,21 @@ namespace Books.Story
 
         public async UniTask ShowStoryProcess()
         {
+            var logics = typeof(Logic).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)
+                .Where(m => m.GetCustomAttribute<LogicAttribute>() != null)
+                .ToDictionary(m =>
+                {
+                    return m.GetCustomAttribute<LogicAttribute>().Name;
+                }, m =>
+                {
+                    return (Func<string, string, string, UniTask>) Delegate.CreateDelegate(typeof(Func<string, string, string, UniTask>), this, m);
+                });
+
             _story = new Ink.Runtime.Story(_ctx.StoryText);
 
             _story.Continue();
 
-            var mainCharacter = string.Empty;
+            _mainCharacter = string.Empty;
             var storyInProgress = true;
             while (storyInProgress)
             {
@@ -43,41 +66,29 @@ namespace Books.Story
                     if (!_story.Continue().TryProcessLine(out var header, out var attributes, out var body)) continue;
 
                     var headerForLogic = header.ToLower();
+                    if (logics.TryGetValue(headerForLogic, out var func))
+                    {
+                        await func.Invoke(header, attributes, body);
+                        continue;
+                    }
+
                     switch (headerForLogic)
                     {
-                        case "аннотация":
+                        case "background":
                             continue;
-                        case "камера":
+                        case "music":
                             continue;
-                        case "жанры":
+                        case "sound":
                             continue;
-                        case "статы":
+                        case "push":
                             continue;
-                        case "локация":
-                            continue;
-                        case "музыка":
-                            continue;
-                        case "звук":
-                            continue;
-                        case "звуки окружения":
-                            continue;
-                        case "уведомление":
-                            continue;
-                        case "ожидание":
-                            if (int.TryParse(body, out var waitTime))
-                            {
-                                await UniTask.Delay(waitTime * 1000);
-                            }
-                            continue;
-                        case "кат-сцена":
-                            continue;
-                        case "клавиатура":
-                            mainCharacter = body.Trim();
+                        case "hero":
+                            _mainCharacter = body.Trim();
                             continue;
                     }
 
                     var side = View.Bubble.Side.Right;
-                    if (headerForLogic == mainCharacter.ToLower()) side = View.Bubble.Side.Left;
+                    if (headerForLogic == _mainCharacter.ToLower()) side = View.Bubble.Side.Left;
                     else if (headerForLogic == "...") side = View.Bubble.Side.Center;
 
                     _ctx.Bubble.UpdateText(side, header, body);

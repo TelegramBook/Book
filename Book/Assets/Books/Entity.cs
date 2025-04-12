@@ -33,15 +33,9 @@ namespace Books
             var storyPath = "story.json";
             var storyText = string.Empty;
             if (Cacher.IsCached(storyPath))
-            {
-                Debug.Log($"Local");
                 storyText = Cacher.TextFromCache(storyPath);
-            }
             else
-            {
-                Debug.Log($"Remote");
                 storyText = Cacher.ToCache(await new AssetRequests().GetText(storyPath), storyPath);
-            }
 
             var storyScreen = new Story.Entity(new Story.Entity.Ctx
             {
