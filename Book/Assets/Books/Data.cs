@@ -7,10 +7,10 @@ namespace Books
     internal struct Data
     {
         [SerializeField] private Loading.Data _loadingData;
-        [SerializeField] private Story.StoryScreen.Data _storyScreenData;
+        [SerializeField] private Story.Data _storyScreenData;
 
         public readonly Loading.Data LoadingData => _loadingData;
-        public readonly Story.StoryScreen.Data StoriesScreenData => _storyScreenData;
+        public readonly Story.Data StoriesScreenData => _storyScreenData;
     }
 }
 

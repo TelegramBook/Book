@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace Shared.Disposable 
 {
@@ -21,24 +20,6 @@ namespace Shared.Disposable
     public abstract class BaseDisposable : IBaseDisposable
     {
         private readonly Stack<IDisposable> _disposables = new ();
-
-        public void Dispose()
-        {
-            while (_disposables.Count > 0)
-                _disposables.Pop().Dispose();
-            OnDispose();
-        }
-
-        public void AddDisposable(IDisposable disposable) => _disposables.Push(disposable);
-
-        protected virtual void OnDispose() { }
-    }
-
-    public abstract class BaseDisposableMB : MonoBehaviour, IBaseDisposable
-    {
-        private readonly Stack<IDisposable> _disposables = new();
-
-        protected virtual void OnDisable() => Dispose();
 
         public void Dispose()
         {

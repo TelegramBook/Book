@@ -4,9 +4,15 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Books.Story 
+namespace Books.Story.View
 {
-    public class StoryBubble : MonoBehaviour
+    public interface IBubble 
+    {
+        public void UpdateText(Bubble.Side side, string header, string body);
+        public void UpdateButtons(Action<int> onClick, params (string header, int index)[] buttons);
+    }
+
+    public class Bubble : MonoBehaviour, IBubble
     {
         public enum Side 
         {
@@ -21,7 +27,7 @@ namespace Books.Story
 
         private readonly Stack<GameObject> _buttons = new();
 
-        public void UpdateText(Side side, string header, string body) 
+        public void UpdateText(Side side, string header, string body)
         {
             ClearAll();
             _chooseButton.gameObject.SetActive(false);

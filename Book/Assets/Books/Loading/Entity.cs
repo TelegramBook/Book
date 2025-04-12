@@ -8,7 +8,6 @@ namespace Books.Loading
     {
         public struct Ctx
         {
-            public IReadOnlyReactiveCommand<float> OnUpdate;
             public Data Data;
         }
 
