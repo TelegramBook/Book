@@ -1,9 +1,7 @@
 using Cysharp.Threading.Tasks;
 using Shared.Disposable;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using UnityEngine;
 
@@ -81,9 +79,6 @@ namespace Books.Story
                         case "sound":
                             continue;
                         case "push":
-                            continue;
-                        case "hero":
-                            _mainCharacter = body.Trim();
                             continue;
                     }
 
