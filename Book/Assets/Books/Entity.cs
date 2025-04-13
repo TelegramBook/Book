@@ -29,7 +29,7 @@ namespace Books
 
             //load some data here...
 
-            var storyPath = "story.json";
+            var storyPath = "story_stars4.json";
             var storyText = string.Empty;
             if (Cacher.IsCached(storyPath))
                 storyText = Cacher.TextFromCache(storyPath);
