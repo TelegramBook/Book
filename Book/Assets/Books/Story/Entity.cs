@@ -22,7 +22,7 @@ namespace Books.Story
             _ctx = ctx;
 
             _bubble = View.Bubble.CreateBubble(_ctx.Data.StoryBubble);
-            _ctx.Data.StoryBubble.gameObject.SetActive(false);
+            _ctx.Data.StoryBubble.SetActive(false);
 
             _logic = new Logic(new Logic.Ctx
             {
@@ -35,8 +35,7 @@ namespace Books.Story
 
         protected override void OnDispose()
         {
-            if (_bubble != null)
-                _bubble.Destroy();
+            _bubble?.Destroy();
             base.OnDispose();
         }
     }

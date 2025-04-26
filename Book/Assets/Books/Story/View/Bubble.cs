@@ -21,7 +21,8 @@ namespace Books.Story.View
         [SerializeField] private Button _chooseButton;
         [SerializeField] private Button _mainButton;
 
-        private readonly Stack<GameObject> _buttons = new();
+        private readonly Stack<Button> _disabledButtons = new();
+        private readonly Stack<Button> _buttons = new();
 
         public void SetActive(bool state) 
         {
@@ -53,25 +54,20 @@ namespace Books.Story.View
 
             var anyButtons = buttons.Length > 0;
             _mainButton.onClick.RemoveAllListeners();
-            if (!anyButtons)
-                _mainButton.onClick.AddListener(() => onClick?.Invoke(-1));
+            if (!anyButtons) _mainButton.onClick.AddListener(() => onClick?.Invoke(-1));
 
             _mainButton.gameObject.SetActive(!anyButtons);
 
             foreach (var (buttonHeader, index) in buttons)
             {
-                var newButton = Instantiate(_chooseButton);
-                newButton.transform.SetParent(_chooseButton.transform.parent, false);
-                newButton.onClick.RemoveAllListeners();
-                newButton.onClick.AddListener(() => onClick?.Invoke(index));
-                var newButtonHeader = newButton.GetComponentInChildren<TMP_Text>(true);
-                newButtonHeader.text = buttonHeader;
+                var button = _disabledButtons.TryPop(out var unit) ? unit : Instantiate(_chooseButton);
+                button.transform.SetParent(_chooseButton.transform.parent, false);
+                button.onClick.RemoveAllListeners();
+                button.onClick.AddListener(() => onClick?.Invoke(index));
+                button.GetComponentInChildren<TMP_Text>(true).text = buttonHeader;
+                button.gameObject.SetActive(true);
 
-                newButton.gameObject.SetActive(true);
-
-                _buttons.Push(newButton.gameObject);
-
-                LayoutRebuilder.ForceRebuildLayoutImmediate(transform as RectTransform);
+                _buttons.Push(button);
             }
 
             SetActive(true);
@@ -80,8 +76,11 @@ namespace Books.Story.View
 
         private void ClearAll()
         {
-            while (_buttons.TryPop(out var unitGO))
-                Destroy(unitGO);
+            while (_buttons.TryPop(out var unit)) 
+            {
+                unit.gameObject.SetActive(false);
+                _disabledButtons.Push(unit);
+            } 
         }
 
         public static IBubble CreateBubble(Bubble prefab)
