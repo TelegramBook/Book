@@ -76,27 +76,15 @@ namespace Books.Story
                 else if (headerForLogic == "...") side = View.Bubble.Side.Center;
 
                 var waitChoice = true;
-                (Action<int> onClick, (string header, int index)[] buttons)? buttonsData =
-                    !_story.canContinue && _story.currentChoices.Count > 0
-                        ? (idx =>
-                            {
-                                _story.ChooseChoiceIndex(idx);
-                                waitChoice = false;
-                            }, _story.currentChoices.Select(c => (c.text, c.index)).ToArray()) 
-                        : null;
+                var buttons = _story.currentChoices.Select(c => (c.text, c.index)).ToArray();
 
-                _ctx.Bubble.UpdateText(side, header, body, buttonsData);
+                _ctx.Bubble.UpdateText(side, header, body, idx => 
+                {
+                    if (idx >= 0) _story.ChooseChoiceIndex(idx);
+                    waitChoice = false;
+                }, buttons);
 
-                if (buttonsData.HasValue) 
-                {
-                    while (waitChoice)
-                        await UniTask.NextFrame();
-                }
-                else 
-                {
-                    while (!Input.GetMouseButtonUp(0))
-                        await UniTask.NextFrame();
-                }
+                while (waitChoice) await UniTask.NextFrame();
 
                 await UniTask.Delay(100);
             }

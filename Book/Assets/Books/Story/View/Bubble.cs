@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,7 +9,7 @@ namespace Books.Story.View
 {
     public interface IBubble 
     {
-        public void UpdateText(Bubble.Side side, string header, string body, (Action<int> onClick, (string header, int index)[] buttons)? buttonsData);
+        public void UpdateText(Bubble.Side side, string header, string body, Action<int> onClick, (string header, int index)[] buttons);
         public void SetActive(bool state);
         public void SetParent(Transform parent, bool worldPositionStays);
         public void Destroy();
@@ -26,6 +27,7 @@ namespace Books.Story.View
         [SerializeField] private TMP_Text _headerTextArea;
         [SerializeField] private TMP_Text _bodyTextArea;
         [SerializeField] private Button _chooseButton;
+        [SerializeField] private Button _mainButton;
 
         private readonly Stack<GameObject> _buttons = new();
 
@@ -45,7 +47,7 @@ namespace Books.Story.View
             UnityEngine.Object.Destroy(gameObject);
         }
 
-        public void UpdateText(Side side, string header, string body, (Action<int> onClick, (string header, int index)[] buttons)? buttonsData)
+        public void UpdateText(Side side, string header, string body, Action<int> onClick, params (string header, int index)[] buttons)
         {
             ClearAll();
             _chooseButton.gameObject.SetActive(false);
@@ -65,23 +67,28 @@ namespace Books.Story.View
             }
             _bodyTextArea.text = body;
 
-            if (buttonsData.HasValue) 
+            var anyButtons = buttons.Length > 0;
+
+            _mainButton.onClick.RemoveAllListeners();
+            if (!anyButtons)
+                _mainButton.onClick.AddListener(() => onClick?.Invoke(-1));
+
+            _mainButton.gameObject.SetActive(!anyButtons);
+
+            foreach (var (buttonHeader, index) in buttons)
             {
-                foreach (var (buttonHeader, index) in buttonsData.Value.buttons)
-                {
-                    var newButton = Instantiate(_chooseButton);
-                    newButton.transform.SetParent(_chooseButton.transform.parent, false);
-                    newButton.onClick.RemoveAllListeners();
-                    newButton.onClick.AddListener(() => buttonsData.Value.onClick?.Invoke(index));
-                    var newButtonHeader = newButton.GetComponentInChildren<TMP_Text>(true);
-                    newButtonHeader.text = buttonHeader;
+                var newButton = Instantiate(_chooseButton);
+                newButton.transform.SetParent(_chooseButton.transform.parent, false);
+                newButton.onClick.RemoveAllListeners();
+                newButton.onClick.AddListener(() => onClick?.Invoke(index));
+                var newButtonHeader = newButton.GetComponentInChildren<TMP_Text>(true);
+                newButtonHeader.text = buttonHeader;
 
-                    newButton.gameObject.SetActive(true);
+                newButton.gameObject.SetActive(true);
 
-                    _buttons.Push(newButton.gameObject);
+                _buttons.Push(newButton.gameObject);
 
-                    LayoutRebuilder.ForceRebuildLayoutImmediate(transform as RectTransform);
-                }
+                LayoutRebuilder.ForceRebuildLayoutImmediate(transform as RectTransform);
             }
 
             SetActive(true);
