@@ -42,7 +42,8 @@ namespace Books.Story.View
 
         public void Destroy()
         {
-            GameObject.Destroy(gameObject);
+            if (this == null) return;
+            UnityEngine.Object.Destroy(gameObject);
         }
 
         public void UpdateText(Side side, string header, string body)

@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using Shared.Disposable;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
@@ -12,8 +13,8 @@ namespace Books.Story
         [AttributeUsage(AttributeTargets.Method)]
         private class LogicAttribute : Attribute
         {
-            public string Name { get; }
-            public LogicAttribute(string name) => Name = name;
+            public string[] Names { get; }
+            public LogicAttribute(params string[] names) => Names = names;
         }
 
         public struct Ctx
@@ -37,15 +38,7 @@ namespace Books.Story
 
         public async UniTask ShowStoryProcess()
         {
-            var logics = typeof(Logic).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)
-                .Where(m => m.GetCustomAttribute<LogicAttribute>() != null)
-                .ToDictionary(m =>
-                {
-                    return m.GetCustomAttribute<LogicAttribute>().Name;
-                }, m =>
-                {
-                    return (Func<string, string, string, UniTask>) Delegate.CreateDelegate(typeof(Func<string, string, string, UniTask>), this, m);
-                });
+            var logics = GetDelegats();
 
             _story = new Ink.Runtime.Story(_ctx.StoryText);
 
@@ -57,47 +50,41 @@ namespace Books.Story
             {
                 _ctx.Bubble.SetActive(false);
 
-                while (_story.canContinue)
+                if (!_story.Continue().TryProcessLine(out var header, out var attributes, out var body)) continue;
+
+                var headerForLogic = header.ToLower();
+                if (logics.TryGetValue(headerForLogic, out var func))
                 {
-                    _ctx.Bubble.SetActive(false);
-
-                    if (!_story.Continue().TryProcessLine(out var header, out var attributes, out var body)) continue;
-
-                    var headerForLogic = header.ToLower();
-                    if (logics.TryGetValue(headerForLogic, out var func))
-                    {
-                        await func.Invoke(header, attributes, body);
-                        continue;
-                    }
-
-                    switch (headerForLogic)
-                    {
-                        case "background":
-                            continue;
-                        case "music":
-                            continue;
-                        case "sound":
-                            continue;
-                        case "push":
-                            continue;
-                    }
-
-                    var side = View.Bubble.Side.Right;
-                    if (headerForLogic == _mainCharacter.ToLower()) side = View.Bubble.Side.Left;
-                    else if (headerForLogic == "...") side = View.Bubble.Side.Center;
-
-                    _ctx.Bubble.UpdateText(side, header, body);
-
-                    if (_story.canContinue)
-                    {
-                        while (!Input.GetMouseButtonUp(0))
-                            await UniTask.NextFrame();
-
-                        await UniTask.Delay(100);
-                    }
+                    await func.Invoke(header, attributes, body);
+                    continue;
                 }
 
-                if (_story.currentChoices.Count > 0)
+                switch (headerForLogic)
+                {
+                    case "background":
+                        continue;
+                    case "music":
+                        continue;
+                    case "sound":
+                        continue;
+                    case "push":
+                        continue;
+                }
+
+                var side = View.Bubble.Side.Right;
+                if (headerForLogic == _mainCharacter.ToLower()) side = View.Bubble.Side.Left;
+                else if (headerForLogic == "...") side = View.Bubble.Side.Center;
+
+                _ctx.Bubble.UpdateText(side, header, body);
+
+                if (_story.canContinue)
+                {
+                    while (!Input.GetMouseButtonUp(0))
+                        await UniTask.NextFrame();
+
+                    await UniTask.Delay(100);
+                }
+                else if (_story.currentChoices.Count > 0)
                 {
                     var waitChoice = true;
 
@@ -115,10 +102,21 @@ namespace Books.Story
                 }
                 else
                 {
-                    _ctx.Bubble.SetActive(false);
                     _story = new Ink.Runtime.Story(_ctx.StoryText);
                 }
             }
+        }
+
+        private Dictionary<string, Func<string, string, string, UniTask>> GetDelegats() 
+        {
+            var flags = BindingFlags.NonPublic | BindingFlags.Instance;
+            return typeof(Logic).GetMethods(flags).Where(m => m.GetCustomAttribute<LogicAttribute>() != null)
+                .SelectMany(m =>
+                {
+                    var attr = m.GetCustomAttribute<LogicAttribute>();
+                    var del = (Func<string, string, string, UniTask>)Delegate.CreateDelegate(typeof(Func<string, string, string, UniTask>), this, m);
+                    return attr.Names.Select(n => (n, del));
+                }).ToDictionary(m => m.n, m => m.del);
         }
     }
 }
