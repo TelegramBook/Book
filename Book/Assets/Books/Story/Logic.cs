@@ -29,7 +29,7 @@ namespace Books.Story
 
         public async UniTask ShowStoryProcess()
         {
-            var logics = GetDelegats<Func<string, string, string, UniTask>>();
+            var logics = GetDelegats<Func<string, string, string, UniTask<bool>>>();
 
             var story = new Ink.Runtime.Story(_ctx.StoryText);
             story.Continue();
@@ -40,34 +40,32 @@ namespace Books.Story
             {
                 _ctx.Bubble.SetActive(false);
 
-                if (!story.Continue().TryProcessLine(out var header, out var attributes, out var body)) continue;
-
-                if (Enum.TryParse<LogicIdx>(header, true, out var logicId) && logics.TryGetValue(logicId, out var func)) 
-                {
-                    await func.Invoke(header, attributes, body);
+                if (!story.Continue().TryProcessLine(out var header, out var attributes, out var body))
                     continue;
-                }
 
-                var waitChoice = true;
-                _ctx.Bubble.UpdateText(_mainCharacter, header, body, idx => 
-                {
-                    if (idx >= 0) story.ChooseChoiceIndex(idx);
-                    waitChoice = false;
-                }, story.currentChoices.Select(c => (c.text, c.index)).ToArray());
-                while (waitChoice) await UniTask.NextFrame();
+                if (Enum.TryParse<LogicIdx>(header, true, out var logicId)
+                    && logics.TryGetValue(logicId, out var func)
+                    && await func.Invoke(header, attributes, body))
+                    continue;
+
+                var buttons = story.currentChoices.Select(c => (c.text, c.index)).ToArray();
+                var result = await _ctx.Bubble.ShowBubble(_mainCharacter, header, body, buttons);
+                if (result >= 0) story.ChooseChoiceIndex(result);
             }
         }
 
         private Dictionary<LogicIdx, T> GetDelegats<T>() where T : Delegate
         {
             var flags = BindingFlags.NonPublic | BindingFlags.Instance;
-            return typeof(Logic).GetMethods(flags).Where(m => m.GetCustomAttribute<LogicAttribute>() != null)
+            return typeof(Logic).GetMethods(flags)
+                .Where(m => m.GetCustomAttribute<LogicAttribute>() != null)
                 .SelectMany(m =>
                 {
                     var attr = m.GetCustomAttribute<LogicAttribute>();
                     var del = (T)Delegate.CreateDelegate(typeof(T), this, m);
                     return attr.Idx.Select(n => (n, del));
-                }).ToDictionary(m => m.n, m => m.del);
+                })
+                .ToDictionary(m => m.n, m => m.del);
         }
     }
 }
