@@ -38,7 +38,7 @@ namespace Books.Story
 
         public async UniTask ShowStoryProcess()
         {
-            var logics = GetDelegats();
+            var logics = GetDelegats<Func<string, string, string, UniTask>>();
 
             _story = new Ink.Runtime.Story(_ctx.StoryText);
 
@@ -75,46 +75,41 @@ namespace Books.Story
                 if (headerForLogic == _mainCharacter.ToLower()) side = View.Bubble.Side.Left;
                 else if (headerForLogic == "...") side = View.Bubble.Side.Center;
 
-                _ctx.Bubble.UpdateText(side, header, body);
+                var waitChoice = true;
+                (Action<int> onClick, (string header, int index)[] buttons)? buttonsData =
+                    !_story.canContinue && _story.currentChoices.Count > 0
+                        ? (idx =>
+                            {
+                                _story.ChooseChoiceIndex(idx);
+                                waitChoice = false;
+                            }, _story.currentChoices.Select(c => (c.text, c.index)).ToArray()) 
+                        : null;
 
-                if (_story.canContinue)
+                _ctx.Bubble.UpdateText(side, header, body, buttonsData);
+
+                if (buttonsData.HasValue) 
+                {
+                    while (waitChoice)
+                        await UniTask.NextFrame();
+                }
+                else 
                 {
                     while (!Input.GetMouseButtonUp(0))
                         await UniTask.NextFrame();
-
-                    await UniTask.Delay(100);
                 }
-                else if (_story.currentChoices.Count > 0)
-                {
-                    var waitChoice = true;
 
-                    var buttons = _story.currentChoices.Select(c => (c.text, c.index)).ToArray();
-                    _ctx.Bubble.UpdateButtons(idx =>
-                    {
-                        _story.ChooseChoiceIndex(idx);
-                        waitChoice = false;
-                    }, buttons);
-
-                    while (waitChoice)
-                        await UniTask.NextFrame();
-
-                    await UniTask.Delay(100);
-                }
-                else
-                {
-                    _story = new Ink.Runtime.Story(_ctx.StoryText);
-                }
+                await UniTask.Delay(100);
             }
         }
 
-        private Dictionary<string, Func<string, string, string, UniTask>> GetDelegats() 
+        private Dictionary<string, T> GetDelegats<T>() where T : Delegate
         {
             var flags = BindingFlags.NonPublic | BindingFlags.Instance;
             return typeof(Logic).GetMethods(flags).Where(m => m.GetCustomAttribute<LogicAttribute>() != null)
                 .SelectMany(m =>
                 {
                     var attr = m.GetCustomAttribute<LogicAttribute>();
-                    var del = (Func<string, string, string, UniTask>)Delegate.CreateDelegate(typeof(Func<string, string, string, UniTask>), this, m);
+                    var del = (T)Delegate.CreateDelegate(typeof(T), this, m);
                     return attr.Names.Select(n => (n, del));
                 }).ToDictionary(m => m.n, m => m.del);
         }
