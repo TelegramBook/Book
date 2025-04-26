@@ -4,7 +4,7 @@ namespace Books.Story
 {
     internal partial class Logic
     {
-        [Logic("await")]
+        [Logic(LogicIdx.Await)]
         private async UniTask RunAwake(string header, string attributes, string body) 
         {
             if (int.TryParse(body, out var waitTime))

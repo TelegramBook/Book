@@ -10,13 +10,6 @@ namespace Books.Story
 {
     internal partial class Logic : BaseDisposable
     {
-        [AttributeUsage(AttributeTargets.Method)]
-        private class LogicAttribute : Attribute
-        {
-            public string[] Names { get; }
-            public LogicAttribute(params string[] names) => Names = names;
-        }
-
         public struct Ctx
         {
             public View.IBubble Bubble;
@@ -24,8 +17,6 @@ namespace Books.Story
         }
 
         private readonly Ctx _ctx;
-
-        private Ink.Runtime.Story _story;
 
         private string _mainCharacter;
 
@@ -40,9 +31,8 @@ namespace Books.Story
         {
             var logics = GetDelegats<Func<string, string, string, UniTask>>();
 
-            _story = new Ink.Runtime.Story(_ctx.StoryText);
-
-            _story.Continue();
+            var story = new Ink.Runtime.Story(_ctx.StoryText);
+            story.Continue();
 
             _mainCharacter = string.Empty;
             var storyInProgress = true;
@@ -50,47 +40,25 @@ namespace Books.Story
             {
                 _ctx.Bubble.SetActive(false);
 
-                if (!_story.Continue().TryProcessLine(out var header, out var attributes, out var body)) continue;
+                if (!story.Continue().TryProcessLine(out var header, out var attributes, out var body)) continue;
 
-                var headerForLogic = header.ToLower();
-                if (logics.TryGetValue(headerForLogic, out var func))
+                if (Enum.TryParse<LogicIdx>(header, true, out var logicId) && logics.TryGetValue(logicId, out var func)) 
                 {
                     await func.Invoke(header, attributes, body);
                     continue;
                 }
 
-                switch (headerForLogic)
-                {
-                    case "background":
-                        continue;
-                    case "music":
-                        continue;
-                    case "sound":
-                        continue;
-                    case "push":
-                        continue;
-                }
-
-                var side = View.Bubble.Side.Right;
-                if (headerForLogic == _mainCharacter.ToLower()) side = View.Bubble.Side.Left;
-                else if (headerForLogic == "...") side = View.Bubble.Side.Center;
-
                 var waitChoice = true;
-                var buttons = _story.currentChoices.Select(c => (c.text, c.index)).ToArray();
-
-                _ctx.Bubble.UpdateText(side, header, body, idx => 
+                _ctx.Bubble.UpdateText(_mainCharacter, header, body, idx => 
                 {
-                    if (idx >= 0) _story.ChooseChoiceIndex(idx);
+                    if (idx >= 0) story.ChooseChoiceIndex(idx);
                     waitChoice = false;
-                }, buttons);
-
+                }, story.currentChoices.Select(c => (c.text, c.index)).ToArray());
                 while (waitChoice) await UniTask.NextFrame();
-
-                await UniTask.Delay(100);
             }
         }
 
-        private Dictionary<string, T> GetDelegats<T>() where T : Delegate
+        private Dictionary<LogicIdx, T> GetDelegats<T>() where T : Delegate
         {
             var flags = BindingFlags.NonPublic | BindingFlags.Instance;
             return typeof(Logic).GetMethods(flags).Where(m => m.GetCustomAttribute<LogicAttribute>() != null)
@@ -98,7 +66,7 @@ namespace Books.Story
                 {
                     var attr = m.GetCustomAttribute<LogicAttribute>();
                     var del = (T)Delegate.CreateDelegate(typeof(T), this, m);
-                    return attr.Names.Select(n => (n, del));
+                    return attr.Idx.Select(n => (n, del));
                 }).ToDictionary(m => m.n, m => m.del);
         }
     }

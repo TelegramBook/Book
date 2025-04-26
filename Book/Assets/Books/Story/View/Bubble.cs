@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,7 +8,7 @@ namespace Books.Story.View
 {
     public interface IBubble 
     {
-        public void UpdateText(Bubble.Side side, string header, string body, Action<int> onClick, (string header, int index)[] buttons);
+        public void UpdateText(string mainCharacter, string header, string body, Action<int> onClick, (string header, int index)[] buttons);
         public void SetActive(bool state);
         public void SetParent(Transform parent, bool worldPositionStays);
         public void Destroy();
@@ -17,13 +16,6 @@ namespace Books.Story.View
 
     public class Bubble : MonoBehaviour, IBubble
     {
-        public enum Side 
-        {
-            Left,
-            Center,
-            Right,
-        }
-
         [SerializeField] private TMP_Text _headerTextArea;
         [SerializeField] private TMP_Text _bodyTextArea;
         [SerializeField] private Button _chooseButton;
@@ -47,28 +39,19 @@ namespace Books.Story.View
             UnityEngine.Object.Destroy(gameObject);
         }
 
-        public void UpdateText(Side side, string header, string body, Action<int> onClick, params (string header, int index)[] buttons)
+        public void UpdateText(string mainCharacter, string header, string body, Action<int> onClick, params (string header, int index)[] buttons)
         {
             ClearAll();
             _chooseButton.gameObject.SetActive(false);
 
             _headerTextArea.text = header;
-            switch (side) 
-            {
-                case Side.Left:
-                    _headerTextArea.alignment = TextAlignmentOptions.Left;
-                    break;
-                case Side.Center:
-                    _headerTextArea.alignment = TextAlignmentOptions.Center;
-                    break;
-                case Side.Right:
-                    _headerTextArea.alignment = TextAlignmentOptions.Right;
-                    break;
-            }
+            _headerTextArea.alignment = TextAlignmentOptions.Right;
+            if (header.ToLower() == mainCharacter.ToLower()) _headerTextArea.alignment = TextAlignmentOptions.Left;
+            else if (header.ToLower() == "...") _headerTextArea.alignment = TextAlignmentOptions.Center;
+
             _bodyTextArea.text = body;
 
             var anyButtons = buttons.Length > 0;
-
             _mainButton.onClick.RemoveAllListeners();
             if (!anyButtons)
                 _mainButton.onClick.AddListener(() => onClick?.Invoke(-1));
