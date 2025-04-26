@@ -32,7 +32,7 @@ namespace Books.Story
         {
             _ctx = ctx;
 
-            _ctx.Bubble.GameObject.SetActive(false);
+            _ctx.Bubble.SetActive(false); 
         }
 
         public async UniTask ShowStoryProcess()
@@ -55,11 +55,11 @@ namespace Books.Story
             var storyInProgress = true;
             while (storyInProgress)
             {
-                _ctx.Bubble.GameObject.SetActive(false);
+                _ctx.Bubble.SetActive(false);
 
                 while (_story.canContinue)
                 {
-                    _ctx.Bubble.GameObject.SetActive(false);
+                    _ctx.Bubble.SetActive(false);
 
                     if (!_story.Continue().TryProcessLine(out var header, out var attributes, out var body)) continue;
 
@@ -115,7 +115,7 @@ namespace Books.Story
                 }
                 else
                 {
-                    _ctx.Bubble.GameObject.SetActive(false);
+                    _ctx.Bubble.SetActive(false);
                     _story = new Ink.Runtime.Story(_ctx.StoryText);
                 }
             }

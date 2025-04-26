@@ -10,7 +10,9 @@ namespace Books.Story.View
     {
         public void UpdateText(Bubble.Side side, string header, string body);
         public void UpdateButtons(Action<int> onClick, params (string header, int index)[] buttons);
-        public GameObject GameObject { get; }
+        public void SetActive(bool state);
+        public void SetParent(Transform parent, bool worldPositionStays);
+        public void Destroy();
     }
 
     public class Bubble : MonoBehaviour, IBubble
@@ -28,7 +30,20 @@ namespace Books.Story.View
 
         private readonly Stack<GameObject> _buttons = new();
 
-        public GameObject GameObject => gameObject;
+        public void SetActive(bool state) 
+        {
+            gameObject.SetActive(state);
+        }
+
+        public void SetParent(Transform parent, bool worldPositionStays)
+        {
+            transform.SetParent(parent, worldPositionStays);
+        }
+
+        public void Destroy()
+        {
+            GameObject.Destroy(gameObject);
+        }
 
         public void UpdateText(Side side, string header, string body)
         {
@@ -88,8 +103,8 @@ namespace Books.Story.View
         public static IBubble CreateBubble(Bubble prefab)
         {
             var storyBubble = Instantiate(prefab) as IBubble;
-            storyBubble.GameObject.transform.SetParent(prefab.transform.parent, false);
-            storyBubble.GameObject.SetActive(true);
+            storyBubble.SetParent(prefab.transform.parent, false);
+            storyBubble.SetActive(true);
 
             return storyBubble;
         }

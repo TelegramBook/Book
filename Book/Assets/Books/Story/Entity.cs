@@ -35,8 +35,8 @@ namespace Books.Story
 
         protected override void OnDispose()
         {
-            if (_bubble != null && _bubble.GameObject != null)
-                UnityEngine.Object.Destroy(_bubble.GameObject);
+            if (_bubble != null)
+                _bubble.Destroy();
             base.OnDispose();
         }
     }
