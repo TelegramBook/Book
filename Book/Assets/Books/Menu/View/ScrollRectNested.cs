@@ -2,7 +2,7 @@ using UnityEngine.UI;
 using System;
 using UnityEngine.EventSystems;
 
-namespace Books.Menu 
+namespace Books.Menu.View
 {
     public class ScrollRectNested : ScrollRect
     {

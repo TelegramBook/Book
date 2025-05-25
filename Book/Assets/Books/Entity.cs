@@ -13,36 +13,54 @@ namespace Books
 
         private readonly Ctx _ctx;
 
+        private readonly Loading.Entity _loading;
+
         public Entity(Ctx ctx)
         {
             _ctx = ctx;
+
+            _loading = new Loading.Entity(new Loading.Entity.Ctx
+            {
+                Data = _ctx.Data.LoadingData,
+            }).AddTo(this);
+            _loading.ShowImmediate();
         }
 
         public async UniTask AsyncProcess()
         {
-            var loading = new Loading.Entity(new Loading.Entity.Ctx
+            await ShowMainMenu();
+            //await ShowStory("story_stars4.json");
+        }
+
+        private async UniTask ShowMainMenu() 
+        {
+            await _loading.Show();
+
+            var mainScreen = new Menu.Entity(new Menu.Entity.Ctx 
             {
-                Data = _ctx.Data.LoadingData,
+                Data = _ctx.Data.MenuData,
+                ManifestPath = "StoryManifest.json",
             }).AddTo(this);
+            await mainScreen.AsyncProcess();
+            mainScreen.ShowImmediate();
 
-            loading.ShowImmediate();
+            await _loading.Hide();
+        }
 
-            //load some data here...
+        private async UniTask ShowStory(string storyPath) 
+        {
+            await _loading.Show();
 
-            var storyPath = "story_stars4.json";
-            var storyText = string.Empty;
-            if (Cacher.IsCached(storyPath))
-                storyText = Cacher.TextFromCache(storyPath);
-            else
-                storyText = Cacher.ToCache(await new AssetRequests().GetText(storyPath), storyPath);
-
+            var storyText = Cacher.IsCached(storyPath) ?
+                Cacher.TextFromCache(storyPath) :
+                Cacher.ToCache(await new AssetRequests().GetText(storyPath), storyPath);
             var storyScreen = new Story.Entity(new Story.Entity.Ctx
             {
                 Data = _ctx.Data.StoriesData,
                 StoryText = storyText,
             }).AddTo(this);
 
-            await loading.Hide();
+            await _loading.Hide();
 
             await storyScreen.ShowStoryProcess();
         }

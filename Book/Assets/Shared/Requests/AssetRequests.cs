@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -6,6 +7,17 @@ namespace Shared.Disposable
 {
     public class AssetRequests
     {
+        public async UniTask<T> GetData<T>(string localPath)
+        {
+            using var request = UnityWebRequest.Get(GetPath(localPath));
+
+            SetHeaders(request);
+
+            await request.SendWebRequest();
+
+            return JsonConvert.DeserializeObject<T>(request.downloadHandler.text);
+        }
+
         public async UniTask<string> GetText(string localPath)
         {
             using var request = UnityWebRequest.Get(GetPath(localPath));

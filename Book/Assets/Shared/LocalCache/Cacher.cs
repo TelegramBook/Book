@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 
@@ -51,7 +52,7 @@ namespace Shared.LocalCache
 
         public static string ToCache(this string data, string fileName) 
         {
-            var rawData = Encoding.UTF8.GetBytes(data);;
+            var rawData = Encoding.UTF8.GetBytes(data);
             rawData.ToCache(fileName);
             return fileName.TextFromCache();
         }
@@ -85,7 +86,15 @@ namespace Shared.LocalCache
             if (!Directory.Exists(localFilesPath))
                 Directory.CreateDirectory(localFilesPath);
 
-            return $"{localFilesPath}/{fileName}";
+            var localExtraPath = fileName.Split('/');
+            for (var  i = 0; i < localExtraPath.Length - 1; i++) 
+            {
+                localFilesPath += "/" + localExtraPath[i];
+                if (!Directory.Exists(localFilesPath))
+                    Directory.CreateDirectory(localFilesPath);
+            }
+
+            return $"{localFilesPath}/{localExtraPath.Last()}";
         }
     }
 }

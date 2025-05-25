@@ -3,7 +3,7 @@ using Shared.Disposable;
 
 namespace Books.Loading
 {
-    public class Entity : BaseDisposable
+    public sealed class Entity : BaseDisposable
     {
         public struct Ctx
         {
