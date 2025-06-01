@@ -20,6 +20,7 @@ namespace Books.Menu.View
         [SerializeField] private TMP_Text _headerArea;
         [SerializeField] private TMP_Text _descriptionArea;
         [SerializeField] private TMP_Text _tagsArea;
+        [SerializeField] private Button _button;
 
         public void SetLabels(Entity.Labels labelId) 
         {
@@ -44,6 +45,12 @@ namespace Books.Menu.View
         public void SetImage(Texture2D image) 
         {
             _image.texture = image;
+        }
+
+        public void SetButton(Action onClick) 
+        {
+            _button.onClick.RemoveAllListeners();
+            _button.onClick.AddListener(onClick.Invoke);
         }
     }
 }
