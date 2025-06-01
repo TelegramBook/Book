@@ -10,6 +10,7 @@ namespace Books.Menu.View
 {
     public interface IScreen
     {
+        public void SetTheme(bool isLightTheme);
         public void ShowImmediate();
         public void HideImmediate();
         public UniTask AddBookAsync(Entity.StoryManifest storyManifest, Action onClick);
@@ -25,14 +26,23 @@ namespace Books.Menu.View
         [SerializeField] private ScreenBook _mainScreenLittleBook;
         [SerializeField] private PopUp _popUp;
 
+        [SerializeField] private GameObject[] _lightElements;
+        [SerializeField] private GameObject[] _darkElements;
+
         private Stack<GameObject> _objects = new ();
+
+        public void SetTheme(bool isLightTheme) 
+        {
+            foreach (var element in _lightElements) element.gameObject.SetActive(isLightTheme);
+            foreach (var element in _darkElements) element.gameObject.SetActive(!isLightTheme);
+        }
 
         public void ShowImmediate()
         {
             _canvasGroup.alpha = 1f;
             _canvasGroup.gameObject.SetActive(true);
 
-            _popUp.Hide();
+            _popUp.HideImmediate();
         }
 
         public void HideImmediate()
@@ -98,17 +108,17 @@ namespace Books.Menu.View
 
         private void OpenPopUp(Texture2D texture, string header, string description, Action onClick)
         {
-            _popUp.SetBackgroundButton(() => _popUp.Hide());
+            _popUp.SetBackgroundButton(() => _popUp.Hide().Forget());
             _popUp.SetImage(texture);
             _popUp.SetHeader(header);
             _popUp.SetDescription(description);
             _popUp.SetReadButton(() =>
             {
-                _popUp.Hide();
+                _popUp.HideImmediate();
                 onClick.Invoke();
             });
 
-            _popUp.Show();
+            _popUp.Show().Forget();
         }
 
         public void Release() 

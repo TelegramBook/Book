@@ -32,10 +32,10 @@ namespace Books
         {
             while (!IsDisposed) 
             {
-                var waitForBook = true;
-                using (var mainScreen = await ShowMainMenu(story => { waitForBook = false; }))
+                Menu.Entity.StoryManifest? storyManifest = null;
+                using (var mainScreen = await ShowMainMenu(story => { storyManifest = story; }))
                 {
-                    while (waitForBook) await UniTask.Yield();
+                    while (!storyManifest.HasValue) await UniTask.Yield();
                 }
 
                 Debug.Log("AsyncProcess");
@@ -49,6 +49,7 @@ namespace Books
 
             var mainScreen = new Menu.Entity(new Menu.Entity.Ctx 
             {
+                IsLightTheme = DateTime.Now.Hour > 9 && DateTime.Now.Hour < 18,
                 Data = _ctx.Data.MenuData,
                 ManifestPath = "StoryManifest.json",
             }).AddTo(this);

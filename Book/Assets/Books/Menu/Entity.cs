@@ -41,6 +41,7 @@ namespace Books.Menu
 
         public struct Ctx
         {
+            public bool IsLightTheme;
             public Data Data;
             public string ManifestPath;
         }
@@ -54,6 +55,8 @@ namespace Books.Menu
 
         public async UniTask AsyncProcess(Action<StoryManifest> onClick)
         {
+            _ctx.Data.Screen.SetTheme(_ctx.IsLightTheme);
+
             var manifests = await new AssetRequests().GetData<List<StoryManifest>>(_ctx.ManifestPath);
             foreach (var storyManifest in manifests) 
             {
@@ -66,6 +69,7 @@ namespace Books.Menu
 
         protected override void OnDispose()
         {
+            HideImmediate();
             _ctx.Data.Screen.Release();
             base.OnDispose();
         }
