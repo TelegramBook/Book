@@ -17,12 +17,17 @@ namespace Books.Menu.View
     {
         [SerializeField] private CanvasGroup _canvasGroup;
         [SerializeField] private ScreenBook _mainScreenBook;
+        [SerializeField] private Dot _mainScreenDot;
+        [SerializeField] private MainTag[] _mainTags;
         [SerializeField] private ScreenBook _mainScreenLittleBook;
+        [SerializeField] private PopUp _popUp;
 
         public void ShowImmediate()
         {
             _canvasGroup.alpha = 1f;
             _canvasGroup.gameObject.SetActive(true);
+
+            _popUp.Hide();
         }
 
         public void HideImmediate()
@@ -33,12 +38,11 @@ namespace Books.Menu.View
 
         public async UniTask AddBookAsync(Entity.StoryManifest storyManifest) 
         {
-            _mainScreenBook.gameObject.SetActive(false);
-
             var posterImage = Cacher.IsCached(storyManifest.ImagePath) ?
                 Cacher.TextureFromCache(storyManifest.ImagePath) :
                 Cacher.ToCache(await new AssetRequests().GetTexture(storyManifest.ImagePath), storyManifest.ImagePath);
 
+            _mainScreenBook.gameObject.SetActive(false);
             var screenBooks = await Object.InstantiateAsync<ScreenBook>(_mainScreenBook, _mainScreenBook.transform.parent);
             foreach (var screenBook in screenBooks) 
             { 
@@ -48,9 +52,26 @@ namespace Books.Menu.View
                 screenBook.SetDescription(storyManifest.Description);
                 screenBook.SetTags(storyManifest.Tags.ToArray());
                 screenBook.SetImage(posterImage);
+                screenBook.SetButton(() => 
+                {
+                    OpenPopUp();
+                });
             }
-
             LayoutRebuilder.ForceRebuildLayoutImmediate(_mainScreenBook.transform.parent as RectTransform);
+
+            _mainScreenDot.gameObject.SetActive(false);
+            var dots = await Object.InstantiateAsync<Dot>(_mainScreenDot, _mainScreenDot.transform.parent);
+            foreach (var dot in dots)
+            {
+                dot.gameObject.SetActive(true);
+                dot.SetSelected(false);
+            }
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_mainScreenDot.transform.parent as RectTransform);
+
+            foreach (var mainTag in _mainTags) 
+            {
+                mainTag.SetSelected(false);
+            }
 
             _mainScreenLittleBook.gameObject.SetActive(false);
             var screenLittleBooks = await Object.InstantiateAsync<ScreenBook>(_mainScreenLittleBook, _mainScreenLittleBook.transform.parent);
@@ -59,9 +80,23 @@ namespace Books.Menu.View
                 screenLittleBook.gameObject.SetActive(true);
                 screenLittleBook.SetLabels(storyManifest.Label);
                 screenLittleBook.SetImage(posterImage);
+                screenLittleBook.SetButton(() =>
+                {
+                    OpenPopUp();
+                });
             }
-
             LayoutRebuilder.ForceRebuildLayoutImmediate(_mainScreenLittleBook.transform.parent as RectTransform);
+
+            void OpenPopUp() 
+            {
+                _popUp.SetBackgroundButton(() => _popUp.Hide());
+                _popUp.SetImage(posterImage);
+                _popUp.SetHeader(storyManifest.Header);
+                _popUp.SetDescription(storyManifest.Description);
+                _popUp.SetReadButton(() => Debug.Log("Read"));
+
+                _popUp.Show();
+            }
         }
     }
 }
