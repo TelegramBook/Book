@@ -20,11 +20,13 @@ namespace Shared.Disposable
     public abstract class BaseDisposable : IBaseDisposable
     {
         private readonly Stack<IDisposable> _disposables = new ();
+        public bool IsDisposed = false;
 
         public void Dispose()
         {
             while (_disposables.Count > 0)
                 _disposables.Pop().Dispose();
+            IsDisposed = true;
             OnDispose();
         }
 

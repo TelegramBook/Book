@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using Shared.Disposable;
+using System;
 using System.Collections.Generic;
 
 namespace Books.Menu 
@@ -51,17 +52,23 @@ namespace Books.Menu
             _ctx = ctx;
         }
 
-        public async UniTask AsyncProcess()
+        public async UniTask AsyncProcess(Action<StoryManifest> onClick)
         {
             var manifests = await new AssetRequests().GetData<List<StoryManifest>>(_ctx.ManifestPath);
             foreach (var storyManifest in manifests) 
             {
-                await _ctx.Data.Screen.AddBookAsync(storyManifest);
+                await _ctx.Data.Screen.AddBookAsync(storyManifest, () => onClick.Invoke(storyManifest));
             }
         }
 
         public void ShowImmediate() => _ctx.Data.Screen.ShowImmediate();
         public void HideImmediate() => _ctx.Data.Screen.HideImmediate();
+
+        protected override void OnDispose()
+        {
+            _ctx.Data.Screen.Release();
+            base.OnDispose();
+        }
     }
 }
 

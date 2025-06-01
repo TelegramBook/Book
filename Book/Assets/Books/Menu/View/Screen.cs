@@ -1,6 +1,8 @@
 using Cysharp.Threading.Tasks;
 using Shared.Disposable;
 using Shared.LocalCache;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,7 +12,8 @@ namespace Books.Menu.View
     {
         public void ShowImmediate();
         public void HideImmediate();
-        public UniTask AddBookAsync(Entity.StoryManifest storyManifest);
+        public UniTask AddBookAsync(Entity.StoryManifest storyManifest, Action onClick);
+        public void Release();
     }
 
     public sealed class Screen : MonoBehaviour, IScreen
@@ -21,6 +24,8 @@ namespace Books.Menu.View
         [SerializeField] private MainTag[] _mainTags;
         [SerializeField] private ScreenBook _mainScreenLittleBook;
         [SerializeField] private PopUp _popUp;
+
+        private Stack<GameObject> _objects = new ();
 
         public void ShowImmediate()
         {
@@ -36,14 +41,14 @@ namespace Books.Menu.View
             _canvasGroup.gameObject.SetActive(false);
         }
 
-        public async UniTask AddBookAsync(Entity.StoryManifest storyManifest) 
+        public async UniTask AddBookAsync(Entity.StoryManifest storyManifest, Action onClick) 
         {
             var posterImage = Cacher.IsCached(storyManifest.ImagePath) ?
                 Cacher.TextureFromCache(storyManifest.ImagePath) :
                 Cacher.ToCache(await new AssetRequests().GetTexture(storyManifest.ImagePath), storyManifest.ImagePath);
 
             _mainScreenBook.gameObject.SetActive(false);
-            var screenBooks = await Object.InstantiateAsync<ScreenBook>(_mainScreenBook, _mainScreenBook.transform.parent);
+            var screenBooks = await UnityEngine.Object.InstantiateAsync<ScreenBook>(_mainScreenBook, _mainScreenBook.transform.parent);
             foreach (var screenBook in screenBooks) 
             { 
                 screenBook.gameObject.SetActive(true);
@@ -54,17 +59,19 @@ namespace Books.Menu.View
                 screenBook.SetImage(posterImage);
                 screenBook.SetButton(() => 
                 {
-                    OpenPopUp();
+                    OpenPopUp(posterImage, storyManifest.Header, storyManifest.Description, onClick);
                 });
+                _objects.Push(screenBook.gameObject);
             }
             LayoutRebuilder.ForceRebuildLayoutImmediate(_mainScreenBook.transform.parent as RectTransform);
 
             _mainScreenDot.gameObject.SetActive(false);
-            var dots = await Object.InstantiateAsync<Dot>(_mainScreenDot, _mainScreenDot.transform.parent);
+            var dots = await UnityEngine.Object.InstantiateAsync<Dot>(_mainScreenDot, _mainScreenDot.transform.parent);
             foreach (var dot in dots)
             {
                 dot.gameObject.SetActive(true);
                 dot.SetSelected(false);
+                _objects.Push(dot.gameObject);
             }
             LayoutRebuilder.ForceRebuildLayoutImmediate(_mainScreenDot.transform.parent as RectTransform);
 
@@ -74,7 +81,7 @@ namespace Books.Menu.View
             }
 
             _mainScreenLittleBook.gameObject.SetActive(false);
-            var screenLittleBooks = await Object.InstantiateAsync<ScreenBook>(_mainScreenLittleBook, _mainScreenLittleBook.transform.parent);
+            var screenLittleBooks = await UnityEngine.Object.InstantiateAsync<ScreenBook>(_mainScreenLittleBook, _mainScreenLittleBook.transform.parent);
             foreach (var screenLittleBook in screenLittleBooks) 
             { 
                 screenLittleBook.gameObject.SetActive(true);
@@ -82,20 +89,33 @@ namespace Books.Menu.View
                 screenLittleBook.SetImage(posterImage);
                 screenLittleBook.SetButton(() =>
                 {
-                    OpenPopUp();
+                    OpenPopUp(posterImage, storyManifest.Header, storyManifest.Description, onClick);
                 });
+                _objects.Push(screenLittleBook.gameObject);
             }
             LayoutRebuilder.ForceRebuildLayoutImmediate(_mainScreenLittleBook.transform.parent as RectTransform);
+        }
 
-            void OpenPopUp() 
+        private void OpenPopUp(Texture2D texture, string header, string description, Action onClick)
+        {
+            _popUp.SetBackgroundButton(() => _popUp.Hide());
+            _popUp.SetImage(texture);
+            _popUp.SetHeader(header);
+            _popUp.SetDescription(description);
+            _popUp.SetReadButton(() =>
             {
-                _popUp.SetBackgroundButton(() => _popUp.Hide());
-                _popUp.SetImage(posterImage);
-                _popUp.SetHeader(storyManifest.Header);
-                _popUp.SetDescription(storyManifest.Description);
-                _popUp.SetReadButton(() => Debug.Log("Read"));
+                _popUp.Hide();
+                onClick.Invoke();
+            });
 
-                _popUp.Show();
+            _popUp.Show();
+        }
+
+        public void Release() 
+        {
+            while(_objects.Count > 0) 
+            {
+                GameObject.Destroy(_objects.Pop());
             }
         }
     }

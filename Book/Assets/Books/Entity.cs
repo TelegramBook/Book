@@ -1,6 +1,8 @@
 using Cysharp.Threading.Tasks;
 using Shared.Disposable;
 using Shared.LocalCache;
+using System;
+using UnityEngine;
 
 namespace Books 
 {
@@ -28,11 +30,20 @@ namespace Books
 
         public async UniTask AsyncProcess()
         {
-            await ShowMainMenu();
-            //await ShowStory("story_stars4.json");
+            while (!IsDisposed) 
+            {
+                var waitForBook = true;
+                using (var mainScreen = await ShowMainMenu(story => { waitForBook = false; }))
+                {
+                    while (waitForBook) await UniTask.Yield();
+                }
+
+                Debug.Log("AsyncProcess");
+                //await ShowStory("story_stars4.json");
+            }
         }
 
-        private async UniTask ShowMainMenu() 
+        private async UniTask<Menu.Entity> ShowMainMenu(Action<Menu.Entity.StoryManifest> onClick) 
         {
             await _loading.Show();
 
@@ -41,10 +52,12 @@ namespace Books
                 Data = _ctx.Data.MenuData,
                 ManifestPath = "StoryManifest.json",
             }).AddTo(this);
-            await mainScreen.AsyncProcess();
+            await mainScreen.AsyncProcess(onClick);
             mainScreen.ShowImmediate();
 
             await _loading.Hide();
+
+            return mainScreen;
         }
 
         private async UniTask ShowStory(string storyPath) 
