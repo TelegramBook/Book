@@ -16,22 +16,6 @@ namespace Books.Story.View
         private readonly Stack<Button> _disabledButtons = new();
         private readonly Stack<Button> _buttons = new();
 
-        public void SetActive(bool state) 
-        {
-            gameObject.SetActive(state);
-        }
-
-        public void SetParent(Transform parent, bool worldPositionStays)
-        {
-            transform.SetParent(parent, worldPositionStays);
-        }
-
-        public void Destroy()
-        {
-            if (this == null) return;
-            UnityEngine.Object.Destroy(gameObject);
-        }
-
         private void ClearAll()
         {
             while (_buttons.TryPop(out var unit)) 
@@ -45,7 +29,7 @@ namespace Books.Story.View
         {
             int? result = null;
 
-            SetActive(false);
+            gameObject.SetActive(false);
 
             ClearAll();
             _chooseButton.gameObject.SetActive(false);
@@ -81,7 +65,7 @@ namespace Books.Story.View
                 _buttons.Push(button);
             }
 
-            SetActive(true);
+            gameObject.SetActive(true);
             LayoutRebuilder.ForceRebuildLayoutImmediate(transform as RectTransform);
 
             await Show();
