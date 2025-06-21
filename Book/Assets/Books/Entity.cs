@@ -38,7 +38,6 @@ namespace Books
                     while (!storyManifest.HasValue) await UniTask.Yield();
                 }
 
-                Debug.Log("AsyncProcess");
                 await ShowStory(storyManifest.Value.StoryPath);
             }
         }
@@ -65,9 +64,8 @@ namespace Books
         {
             await _loading.Show();
 
-            var storyText = Cacher.IsCached(storyPath) ?
-                Cacher.TextFromCache(storyPath) :
-                Cacher.ToCache(await new AssetRequests().GetText(storyPath), storyPath);
+            var storyText = await Cacher.GetTextAsync(storyPath);
+
             var storyScreen = new Story.Entity(new Story.Entity.Ctx
             {
                 Data = _ctx.Data.StoriesData,

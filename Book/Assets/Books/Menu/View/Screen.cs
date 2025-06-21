@@ -53,9 +53,7 @@ namespace Books.Menu.View
 
         public async UniTask AddBookAsync(Entity.StoryManifest storyManifest, Action onClick) 
         {
-            var posterImage = Cacher.IsCached(storyManifest.ImagePath) ?
-                Cacher.TextureFromCache(storyManifest.ImagePath) :
-                Cacher.ToCache(await new AssetRequests().GetTexture(storyManifest.ImagePath), storyManifest.ImagePath);
+            var posterImage = await Cacher.GetTextureAsync(storyManifest.ImagePath);
 
             _mainScreenBook.gameObject.SetActive(false);
             var screenBooks = await UnityEngine.Object.InstantiateAsync<ScreenBook>(_mainScreenBook, _mainScreenBook.transform.parent);

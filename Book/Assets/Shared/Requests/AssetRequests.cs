@@ -9,7 +9,8 @@ namespace Shared.Disposable
     {
         public async UniTask<T> GetData<T>(string localPath)
         {
-            using var request = UnityWebRequest.Get(GetPath(localPath));
+            var path = GetPath(localPath);
+            using var request = UnityWebRequest.Get(path);
 
             SetHeaders(request);
 
@@ -20,7 +21,8 @@ namespace Shared.Disposable
 
         public async UniTask<string> GetText(string localPath)
         {
-            using var request = UnityWebRequest.Get(GetPath(localPath));
+            var path = GetPath(localPath);
+            using var request = UnityWebRequest.Get(path);
 
             SetHeaders(request);
 
@@ -31,7 +33,8 @@ namespace Shared.Disposable
 
         public async UniTask<Texture2D> GetTexture(string localPath)
         {
-            using var request = UnityWebRequestTexture.GetTexture(GetPath(localPath));
+            var path = GetPath(localPath);
+            using var request = UnityWebRequestTexture.GetTexture(path);
 
             SetHeaders(request);
 

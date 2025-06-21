@@ -31,7 +31,6 @@ namespace Books.Story
         {
             var logics = GetDelegats<Func<string, string, string, UniTask<bool>>>();
 
-            Debug.Log(_ctx.StoryText);
             var story = new Ink.Runtime.Story(_ctx.StoryText);
             story.Continue();
 
