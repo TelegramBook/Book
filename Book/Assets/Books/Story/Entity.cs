@@ -13,28 +13,27 @@ namespace Books.Story
 
         private readonly Ctx _ctx;
 
-        private readonly View.IBubble _bubble;
-
         private readonly Logic _logic;
 
         public Entity(Ctx ctx)
         {
             _ctx = ctx;
 
-            _bubble = _ctx.Data.Screen.CreateBubble();
-
             _logic = new Logic(new Logic.Ctx
             {
-                Bubble = _bubble,
+                Screen = _ctx.Data.Screen,
                 StoryText = _ctx.StoryText,
             }).AddTo(this);
         }
 
         public async UniTask ShowStoryProcess() => await _logic.ShowStoryProcess();
 
+        public void ShowImmediate() => _ctx.Data.Screen.ShowImmediate();
+        public void HideImmediate() => _ctx.Data.Screen.HideImmediate();
+
         protected override void OnDispose()
         {
-            _bubble?.Destroy();
+            HideImmediate();
             base.OnDispose();
         }
     }

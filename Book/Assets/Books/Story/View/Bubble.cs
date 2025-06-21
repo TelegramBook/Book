@@ -6,15 +6,7 @@ using UnityEngine.UI;
 
 namespace Books.Story.View
 {
-    public interface IBubble 
-    {
-        public UniTask<int> ShowBubble(string mainCharacter, string header, string body, params (string header, int index)[] buttons);
-        public void SetActive(bool state);
-        public void SetParent(Transform parent, bool worldPositionStays);
-        public void Destroy();
-    }
-
-    public class Bubble : MonoBehaviour, IBubble
+    public class Bubble : MonoBehaviour
     {
         [SerializeField] private TMP_Text _headerTextArea;
         [SerializeField] private TMP_Text _bodyTextArea;

@@ -12,7 +12,7 @@ namespace Books.Story
     {
         public struct Ctx
         {
-            public View.IBubble Bubble;
+            public View.IScreen Screen;
             public string StoryText;
         }
 
@@ -23,8 +23,6 @@ namespace Books.Story
         public Logic(Ctx ctx)
         {
             _ctx = ctx;
-
-            _ctx.Bubble.SetActive(false); 
         }
 
         public async UniTask ShowStoryProcess()
@@ -38,7 +36,7 @@ namespace Books.Story
             var storyInProgress = true;
             while (storyInProgress)
             {
-                _ctx.Bubble.SetActive(false);
+                _ctx.Screen.HideBubble();
 
                 if (!story.Continue().TryProcessLine(out var header, out var attributes, out var body))
                     continue;
@@ -49,7 +47,7 @@ namespace Books.Story
                     continue;
 
                 var buttons = story.currentChoices.Select(c => (c.text, c.index)).ToArray();
-                var result = await _ctx.Bubble.ShowBubble(_mainCharacter, header, body, buttons);
+                var result = await _ctx.Screen.ShowBubble(_mainCharacter, header, body, buttons);
                 if (result >= 0) story.ChooseChoiceIndex(result);
             }
         }

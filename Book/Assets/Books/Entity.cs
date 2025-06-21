@@ -37,7 +37,10 @@ namespace Books
                     while (!storyManifest.HasValue) await UniTask.Yield();
                 }
 
-                await ShowStory(storyManifest.Value.StoryPath);
+                using (var storyScreen = await ShowStory(storyManifest.Value.StoryPath)) 
+                {
+                    
+                }
             }
         }
 
@@ -59,7 +62,7 @@ namespace Books
             return mainScreen;
         }
 
-        private async UniTask ShowStory(string storyPath) 
+        private async UniTask<Story.Entity> ShowStory(string storyPath) 
         {
             await _loading.Show();
 
@@ -71,9 +74,13 @@ namespace Books
                 StoryText = storyText,
             }).AddTo(this);
 
+            storyScreen.ShowImmediate();
+
             await _loading.Hide();
 
             await storyScreen.ShowStoryProcess();
+
+            return storyScreen;
         }
     }
 }

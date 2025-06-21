@@ -14084,6 +14084,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _bubble: {fileID: 1024384150}
+  _canvasGroup: {fileID: 1636364213}
 --- !u!1 &1639397446
 GameObject:
   m_ObjectHideFlags: 0
