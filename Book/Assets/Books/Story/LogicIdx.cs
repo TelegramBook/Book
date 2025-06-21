@@ -6,6 +6,7 @@ namespace Books.Story
         Hero,
         Background,
         Music,
-        Sound
+        Sound,
+        ќжидание,
     }
 }

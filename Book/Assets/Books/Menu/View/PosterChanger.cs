@@ -9,9 +9,9 @@ namespace Books.Menu.View
 
         private void Update()
         {
-            var t = (Mathf.Abs(_targetPoint.position.x - transform.position.x) / (UnityEngine.Screen.width * 0.33f));
+            var t = (Mathf.Abs(_targetPoint.position.x - transform.position.x) / (UnityEngine.Screen.width * 0.2f));
             transform.localScale = Vector3.one * Mathf.Lerp(1f, 0.85f, t);
-            _detailGroup.alpha = Mathf.Lerp(1f, 0f, t);
+            _detailGroup.alpha = Mathf.Lerp(1f, 1f, t);
         }
     }
 }

@@ -39,7 +39,7 @@ namespace Books
                 }
 
                 Debug.Log("AsyncProcess");
-                //await ShowStory("story_stars4.json");
+                await ShowStory(storyManifest.Value.StoryPath);
             }
         }
 
@@ -49,7 +49,7 @@ namespace Books
 
             var mainScreen = new Menu.Entity(new Menu.Entity.Ctx 
             {
-                IsLightTheme = DateTime.Now.Hour > 9 && DateTime.Now.Hour < 18,
+                IsLightTheme = DateTime.Now.Hour > 9 && DateTime.Now.Hour < 20,
                 Data = _ctx.Data.MenuData,
                 ManifestPath = "StoryManifest.json",
             }).AddTo(this);
