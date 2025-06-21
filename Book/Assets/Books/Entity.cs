@@ -41,10 +41,7 @@ namespace Books
                 var done = false;
                 using (var storyScreen = await ShowStory(storyManifest.Value.StoryPath, () => { done = true; })) 
                 {
-                    while (!done) 
-                    { 
-                        await UniTask.Yield();
-                    };
+                    while (!done) await UniTask.Yield();
                 }
             }
         }
@@ -83,7 +80,6 @@ namespace Books
 
             await _loading.Hide();
 
-            //await storyScreen.ShowStoryProcess(onDone);
             storyScreen.ShowStoryProcess(onDone).Forget();
 
             return storyScreen;
