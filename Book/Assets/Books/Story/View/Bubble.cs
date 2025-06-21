@@ -26,10 +26,8 @@ namespace Books.Story.View
             } 
         }
 
-        public async UniTask<int> ShowBubble(string mainCharacter, string header, string body, params (string header, int index)[] buttons)
+        public async UniTask ShowBubble(Action<int> onClick, string mainCharacter, string header, string body, params (string header, int index)[] buttons)
         {
-            int? result = null;
-
             gameObject.SetActive(false);
 
             ClearAll();
@@ -50,7 +48,7 @@ namespace Books.Story.View
 
             var anyButtons = buttons.Length > 0;
             _mainButton.onClick.RemoveAllListeners();
-            if (!anyButtons) _mainButton.onClick.AddListener(() => result = -1);
+            if (!anyButtons) _mainButton.onClick.AddListener(() => onClick.Invoke(-1));
 
             _mainButton.gameObject.SetActive(!anyButtons);
 
@@ -59,7 +57,7 @@ namespace Books.Story.View
                 var button = _disabledButtons.TryPop(out var unit) ? unit : Instantiate(_chooseButton);
                 button.transform.SetParent(_chooseButton.transform.parent, false);
                 button.onClick.RemoveAllListeners();
-                button.onClick.AddListener(() => result = index);
+                button.onClick.AddListener(() => onClick.Invoke(index));
                 button.GetComponentInChildren<TMP_Text>(true).text = buttonHeader;
                 button.gameObject.SetActive(true);
 
@@ -70,11 +68,6 @@ namespace Books.Story.View
             LayoutRebuilder.ForceRebuildLayoutImmediate(transform as RectTransform);
 
             await Show();
-
-            while (!result.HasValue)
-                await UniTask.Yield();
-
-            return result.Value;
         }
 
         private async UniTask Show()

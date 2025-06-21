@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using Shared.Disposable;
+using System;
 
 namespace Books.Story 
 {
@@ -26,7 +27,7 @@ namespace Books.Story
             }).AddTo(this);
         }
 
-        public async UniTask ShowStoryProcess() => await _logic.ShowStoryProcess();
+        public async UniTask ShowStoryProcess(Action onDone) => await _logic.ShowStoryProcess(onDone);
 
         public void ShowImmediate() => _ctx.Data.Screen.ShowImmediate();
         public void HideImmediate() => _ctx.Data.Screen.HideImmediate();

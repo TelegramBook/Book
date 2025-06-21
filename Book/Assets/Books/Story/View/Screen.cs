@@ -1,5 +1,7 @@
 using Cysharp.Threading.Tasks;
+using System;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Books.Story.View 
 {
@@ -7,14 +9,22 @@ namespace Books.Story.View
     {
         public void ShowImmediate();
         public void HideImmediate();
-        public UniTask<int> ShowBubble(string mainCharacter, string header, string body, params (string header, int index)[] buttons);
+        public UniTask ShowBubble(Action<int> onClick, string mainCharacter, string header, string body, params (string header, int index)[] buttons);
         public void HideBubble();
+        public void SetCloseAction(Action onClick);
     }
 
     public class Screen : MonoBehaviour, IScreen
     {
         [SerializeField] private Bubble _bubble;
         [SerializeField] private CanvasGroup _canvasGroup;
+        [SerializeField] private Button _closeButton;
+
+        public void SetCloseAction(Action onClick) 
+        {
+            _closeButton.onClick.RemoveAllListeners();
+            _closeButton.onClick.AddListener(() => onClick.Invoke());
+        }
 
         public void ShowImmediate()
         {
@@ -28,9 +38,9 @@ namespace Books.Story.View
             _canvasGroup.gameObject.SetActive(false);
         }
 
-        public async UniTask<int> ShowBubble(string mainCharacter, string header, string body, params (string header, int index)[] buttons) 
+        public async UniTask ShowBubble(Action<int> onClick, string mainCharacter, string header, string body, params (string header, int index)[] buttons) 
         {
-            return await _bubble.ShowBubble(mainCharacter, header, body, buttons);
+            await _bubble.ShowBubble(onClick, mainCharacter, header, body, buttons);
         }
 
         public void HideBubble() 

@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using Shared.Disposable;
 using Shared.LocalCache;
 using System;
+using UnityEngine;
 
 namespace Books 
 {
@@ -37,9 +38,13 @@ namespace Books
                     while (!storyManifest.HasValue) await UniTask.Yield();
                 }
 
-                using (var storyScreen = await ShowStory(storyManifest.Value.StoryPath)) 
+                var done = false;
+                using (var storyScreen = await ShowStory(storyManifest.Value.StoryPath, () => { done = true; })) 
                 {
-                    
+                    while (!done) 
+                    { 
+                        await UniTask.Yield();
+                    };
                 }
             }
         }
@@ -62,7 +67,7 @@ namespace Books
             return mainScreen;
         }
 
-        private async UniTask<Story.Entity> ShowStory(string storyPath) 
+        private async UniTask<Story.Entity> ShowStory(string storyPath, Action onDone) 
         {
             await _loading.Show();
 
@@ -78,7 +83,8 @@ namespace Books
 
             await _loading.Hide();
 
-            await storyScreen.ShowStoryProcess();
+            //await storyScreen.ShowStoryProcess(onDone);
+            storyScreen.ShowStoryProcess(onDone).Forget();
 
             return storyScreen;
         }

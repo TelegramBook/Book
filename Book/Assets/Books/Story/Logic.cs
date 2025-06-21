@@ -27,16 +27,17 @@ namespace Books.Story
             _ctx.Screen.HideBubble();
         }
 
-        public async UniTask ShowStoryProcess()
+        public async UniTask ShowStoryProcess(Action onDone)
         {
             var logics = GetDelegats<Func<string, string, string, UniTask<bool>>>();
 
             var story = new Ink.Runtime.Story(_ctx.StoryText);
             story.Continue();
 
+            _ctx.Screen.SetCloseAction(onDone);
+
             _mainCharacter = string.Empty;
-            var storyInProgress = true;
-            while (storyInProgress)
+            while (!IsDisposed)
             {
                 _ctx.Screen.HideBubble();
 
@@ -49,8 +50,13 @@ namespace Books.Story
                     continue;
 
                 var buttons = story.currentChoices.Select(c => (c.text, c.index)).ToArray();
-                var result = await _ctx.Screen.ShowBubble(_mainCharacter, header, body, buttons);
-                if (result >= 0) story.ChooseChoiceIndex(result);
+                var clicked = false;
+                await _ctx.Screen.ShowBubble((index) => 
+                {
+                    if (index >= 0) story.ChooseChoiceIndex(index);
+                    clicked = true;
+                }, _mainCharacter, header, body, buttons);
+                while (!clicked && !IsDisposed) await UniTask.Yield();
             }
         }
 
