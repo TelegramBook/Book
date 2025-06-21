@@ -23,6 +23,8 @@ namespace Books.Story
         public Logic(Ctx ctx)
         {
             _ctx = ctx;
+
+            _ctx.Screen.HideBubble();
         }
 
         public async UniTask ShowStoryProcess()
