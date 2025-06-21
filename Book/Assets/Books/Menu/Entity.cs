@@ -53,7 +53,7 @@ namespace Books.Menu
             _ctx = ctx;
         }
 
-        public async UniTask AsyncProcess(Action<StoryManifest> onClick)
+        public async UniTask Init(Action<StoryManifest> onClick)
         {
             _ctx.Data.Screen.SetTheme(_ctx.IsLightTheme);
 

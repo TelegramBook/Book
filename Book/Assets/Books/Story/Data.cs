@@ -6,7 +6,8 @@ namespace Books.Story
     [Serializable]
     public struct Data
     {
-        [SerializeField] private View.Bubble _storyBubble;
-        public readonly View.Bubble StoryBubble => _storyBubble;
+        [SerializeField] private View.Screen _screen;
+
+        public readonly View.IScreen Screen => _screen;
     }
 }

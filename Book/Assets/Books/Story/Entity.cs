@@ -21,8 +21,7 @@ namespace Books.Story
         {
             _ctx = ctx;
 
-            _bubble = View.Bubble.CreateBubble(_ctx.Data.StoryBubble);
-            _ctx.Data.StoryBubble.SetActive(false);
+            _bubble = _ctx.Data.Screen.CreateBubble();
 
             _logic = new Logic(new Logic.Ctx
             {

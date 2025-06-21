@@ -51,7 +51,7 @@ namespace Books
                 Data = _ctx.Data.MenuData,
                 ManifestPath = "StoryManifest.json",
             }).AddTo(this);
-            await mainScreen.AsyncProcess(onClick);
+            await mainScreen.Init(onClick);
             await mainScreen.Show();
 
             await _loading.Hide();

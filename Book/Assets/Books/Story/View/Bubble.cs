@@ -49,15 +49,6 @@ namespace Books.Story.View
             } 
         }
 
-        public static IBubble CreateBubble(Bubble prefab)
-        {
-            var storyBubble = Instantiate(prefab) as IBubble;
-            storyBubble.SetParent(prefab.transform.parent, false);
-            storyBubble.SetActive(true);
-
-            return storyBubble;
-        }
-
         public async UniTask<int> ShowBubble(string mainCharacter, string header, string body, params (string header, int index)[] buttons)
         {
             int? result = null;
