@@ -20,6 +20,10 @@ namespace Books.Menu.View
         {
             _canvasGroup.alpha = 0f;
             _canvasGroup.gameObject.SetActive(true);
+            await UniTask.Delay(50);
+            _canvasGroup.gameObject.SetActive(false);
+            await UniTask.Delay(50);
+            _canvasGroup.gameObject.SetActive(true);
 
             var delayMs = 50;
             var deltaTime = delayMs / 1000f;

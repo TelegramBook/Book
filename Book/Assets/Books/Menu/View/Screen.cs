@@ -1,5 +1,4 @@
 using Cysharp.Threading.Tasks;
-using Shared.Disposable;
 using Shared.LocalCache;
 using System;
 using System.Collections.Generic;
@@ -11,7 +10,7 @@ namespace Books.Menu.View
     public interface IScreen
     {
         public void SetTheme(bool isLightTheme);
-        public void ShowImmediate();
+        public UniTask Show();
         public void HideImmediate();
         public UniTask AddBookAsync(Entity.StoryManifest storyManifest, Action onClick);
         public void Release();
@@ -29,18 +28,23 @@ namespace Books.Menu.View
         [SerializeField] private GameObject[] _lightElements;
         [SerializeField] private GameObject[] _darkElements;
 
-        private Stack<GameObject> _objects = new ();
+        private readonly Stack<GameObject> _objects = new ();
 
         public void SetTheme(bool isLightTheme) 
         {
-            foreach (var element in _lightElements) element.gameObject.SetActive(isLightTheme);
-            foreach (var element in _darkElements) element.gameObject.SetActive(!isLightTheme);
+            foreach (var element in _lightElements) element.SetActive(isLightTheme);
+            foreach (var element in _darkElements) element.SetActive(!isLightTheme);
         }
 
-        public void ShowImmediate()
+        public async UniTask Show()
         {
-            _canvasGroup.alpha = 1f;
+            _canvasGroup.alpha = 0f;
             _canvasGroup.gameObject.SetActive(true);
+            await UniTask.Delay(50);
+            _canvasGroup.gameObject.SetActive(false);
+            await UniTask.Delay(50);
+            _canvasGroup.gameObject.SetActive(true);
+            _canvasGroup.alpha = 1f;
 
             _popUp.HideImmediate();
         }
@@ -71,7 +75,6 @@ namespace Books.Menu.View
                 });
                 _objects.Push(screenBook.gameObject);
             }
-            LayoutRebuilder.ForceRebuildLayoutImmediate(_mainScreenBook.transform.parent as RectTransform);
 
             _mainScreenDot.gameObject.SetActive(false);
             var dots = await UnityEngine.Object.InstantiateAsync<Dot>(_mainScreenDot, _mainScreenDot.transform.parent);
@@ -81,7 +84,6 @@ namespace Books.Menu.View
                 dot.SetSelected(false);
                 _objects.Push(dot.gameObject);
             }
-            LayoutRebuilder.ForceRebuildLayoutImmediate(_mainScreenDot.transform.parent as RectTransform);
 
             foreach (var mainTag in _mainTags) 
             {
@@ -101,7 +103,6 @@ namespace Books.Menu.View
                 });
                 _objects.Push(screenLittleBook.gameObject);
             }
-            LayoutRebuilder.ForceRebuildLayoutImmediate(_mainScreenLittleBook.transform.parent as RectTransform);
         }
 
         private void OpenPopUp(Texture2D texture, string header, string description, Action onClick)

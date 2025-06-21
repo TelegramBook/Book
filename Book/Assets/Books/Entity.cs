@@ -2,7 +2,6 @@ using Cysharp.Threading.Tasks;
 using Shared.Disposable;
 using Shared.LocalCache;
 using System;
-using UnityEngine;
 
 namespace Books 
 {
@@ -53,7 +52,7 @@ namespace Books
                 ManifestPath = "StoryManifest.json",
             }).AddTo(this);
             await mainScreen.AsyncProcess(onClick);
-            mainScreen.ShowImmediate();
+            await mainScreen.Show();
 
             await _loading.Hide();
 

@@ -64,7 +64,7 @@ namespace Books.Menu
             }
         }
 
-        public void ShowImmediate() => _ctx.Data.Screen.ShowImmediate();
+        public async UniTask Show() => await _ctx.Data.Screen.Show();
         public void HideImmediate() => _ctx.Data.Screen.HideImmediate();
 
         protected override void OnDispose()
