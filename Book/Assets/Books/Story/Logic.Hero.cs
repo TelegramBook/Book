@@ -4,7 +4,7 @@ namespace Books.Story
 {
     internal partial class Logic
     {
-        [Logic(LogicIdx.Hero)]
+        [Logic(LogicIdx.Hero, LogicIdx.Клавиатура)]
         private async UniTask<bool> RunHero(string header, string attributes, string body)
         {
             _mainCharacter = body.Trim();

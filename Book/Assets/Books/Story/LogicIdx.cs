@@ -6,6 +6,7 @@ namespace Books.Story
         Ожидание,
 
         Hero,
+        Клавиатура,
 
         Background,
 
