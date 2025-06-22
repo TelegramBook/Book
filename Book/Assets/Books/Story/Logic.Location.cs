@@ -6,7 +6,7 @@ namespace Books.Story
     internal partial class Logic
     {
         [Logic(LogicIdx.Location, LogicIdx.Локация)]
-        private async UniTask<bool> LoadLocation(string header, string attributes, string body)
+        private async UniTask<bool> RunLocation(string header, string attributes, string body)
         {
             await _ctx.Screen.HideLocation();
 
