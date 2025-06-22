@@ -2,7 +2,6 @@ using Cysharp.Threading.Tasks;
 using Shared.Disposable;
 using Shared.LocalCache;
 using System;
-using UnityEngine;
 
 namespace Books 
 {
@@ -39,7 +38,7 @@ namespace Books
                 }
 
                 var done = false;
-                using (var storyScreen = await ShowStory(storyManifest.Value.StoryPath, () => { done = true; })) 
+                using (var storyScreen = await ShowStory($"{storyManifest.Value.StoryPath}/Story.json", () => { done = true; })) 
                 {
                     while (!done) await UniTask.Yield();
                 }

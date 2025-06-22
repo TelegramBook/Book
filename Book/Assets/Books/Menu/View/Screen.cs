@@ -1,7 +1,9 @@
 using Cysharp.Threading.Tasks;
+using Shared.Disposable;
 using Shared.LocalCache;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Books.Menu.View 
@@ -56,21 +58,50 @@ namespace Books.Menu.View
 
         public async UniTask AddBookAsync(Entity.StoryManifest storyManifest, Action onClick) 
         {
-            var posterImage = await Cacher.GetTextureAsync(storyManifest.ImagePath);
+            var storyText = await Cacher.GetTextAsync($"{storyManifest.StoryPath}/Story.json");
+            var story = new Ink.Runtime.Story(storyText);
+
+            var posterPath = string.Empty;
+            var label = Entity.Labels.Next;
+            var storyHeader = string.Empty;
+            var description = string.Empty;
+            var tags = new string[0];
+            var mainTags = new Entity.MainTags[0];
+            while (story.canContinue) 
+            {
+                if (!story.Continue().TryProcessLine(out var header, out var attributes, out var body))
+                    continue;
+
+                if (header.ToLower() == "название") storyHeader = body;
+                if (header.ToLower() == "жанры") tags = body.Split(",", StringSplitOptions.RemoveEmptyEntries);
+                if (header.ToLower() == "бирка" && Enum.TryParse<Entity.Labels>(body, out var l)) label = l;
+                if (header.ToLower() == "раздел") 
+                {
+                    mainTags = body.Split(",", StringSplitOptions.RemoveEmptyEntries)
+                        .Where(b => Enum.TryParse<Entity.MainTags>(b, out _))
+                        .Select(b => Enum.Parse<Entity.MainTags>(b))
+                        .ToArray();
+                }
+                if (header.ToLower() == "постер") posterPath = $"{storyManifest.StoryPath}/{body}";
+                if (header.ToLower() == "аннотаци€") description = body;
+            }
+            
+
+            var posterImage = await Cacher.GetTextureAsync(posterPath);
 
             _mainScreenBook.gameObject.SetActive(false);
             var screenBooks = await UnityEngine.Object.InstantiateAsync<ScreenBook>(_mainScreenBook, _mainScreenBook.transform.parent);
             foreach (var screenBook in screenBooks) 
             { 
                 screenBook.gameObject.SetActive(true);
-                screenBook.SetLabels(storyManifest.Label);
-                screenBook.SetHeader(storyManifest.Header);
-                screenBook.SetDescription(storyManifest.Description);
-                screenBook.SetTags(storyManifest.Tags.ToArray());
+                screenBook.SetLabels(label);
+                screenBook.SetHeader(storyHeader);
+                screenBook.SetDescription(description);
+                screenBook.SetTags(tags);
                 screenBook.SetImage(posterImage);
                 screenBook.SetButton(() => 
                 {
-                    OpenPopUp(posterImage, storyManifest.Header, storyManifest.Description, onClick);
+                    OpenPopUp(posterImage, storyHeader, description, onClick);
                 });
                 _objects.Push(screenBook.gameObject);
             }
@@ -94,11 +125,11 @@ namespace Books.Menu.View
             foreach (var screenLittleBook in screenLittleBooks) 
             { 
                 screenLittleBook.gameObject.SetActive(true);
-                screenLittleBook.SetLabels(storyManifest.Label);
+                screenLittleBook.SetLabels(label);
                 screenLittleBook.SetImage(posterImage);
                 screenLittleBook.SetButton(() =>
                 {
-                    OpenPopUp(posterImage, storyManifest.Header, storyManifest.Description, onClick);
+                    OpenPopUp(posterImage, storyHeader, description, onClick);
                 });
                 _objects.Push(screenLittleBook.gameObject);
             }

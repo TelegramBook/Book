@@ -30,12 +30,6 @@ namespace Books.Menu
 
         public struct StoryManifest
         {
-            public Labels Label;
-            public List<string> Tags;
-            public List<MainTags> MainTags;
-            public string Header;
-            public string Description;
-            public string ImagePath;
             public string StoryPath;
         }
 

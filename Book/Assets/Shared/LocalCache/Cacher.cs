@@ -15,8 +15,8 @@ namespace Shared.LocalCache
             DirtyHackWithPlayerPrefs();
 
             var versionedFileName = fileName;
-            return IsCached(versionedFileName) ?
-                TextFromCache(versionedFileName) :
+            return //IsCached(versionedFileName) ?
+                //TextFromCache(versionedFileName) :
                 ToCache(await new AssetRequests().GetText(versionedFileName), versionedFileName);
         }
 
