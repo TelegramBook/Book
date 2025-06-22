@@ -7,11 +7,17 @@ namespace Books.Story.View
 {
     public interface IScreen
     {
+        public void SetCloseAction(Action onClick);
+
         public void ShowImmediate();
         public void HideImmediate();
+
         public UniTask ShowBubble(Action<int> onClick, string mainCharacter, string header, string body, params (string header, int index)[] buttons);
         public void HideBubble();
-        public void SetCloseAction(Action onClick);
+
+        public UniTask ShowLocation(Texture2D image);
+        public UniTask HideLocation();
+        public void HideLocationImmediate();
     }
 
     public class Screen : MonoBehaviour, IScreen
@@ -19,6 +25,7 @@ namespace Books.Story.View
         [SerializeField] private Bubble _bubble;
         [SerializeField] private CanvasGroup _canvasGroup;
         [SerializeField] private Button _closeButton;
+        [SerializeField] private Location _location;
 
         public void SetCloseAction(Action onClick) 
         {
@@ -46,6 +53,21 @@ namespace Books.Story.View
         public void HideBubble() 
         {
             _bubble.gameObject.SetActive(false);
+        }
+
+        public async UniTask ShowLocation(Texture2D image) 
+        {
+            await _location.Show(image);
+        }
+
+        public async UniTask HideLocation() 
+        {
+            await _location.Hide();
+        }
+
+        public void HideLocationImmediate() 
+        {
+            _location.HideImmediate();
         }
     }
 }

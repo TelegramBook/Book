@@ -9,6 +9,7 @@ namespace Books.Story
         public struct Ctx
         {
             public Data Data;
+            public string RootFolderName;
             public string StoryText;
         }
 
@@ -23,6 +24,7 @@ namespace Books.Story
             _logic = new Logic(new Logic.Ctx
             {
                 Screen = _ctx.Data.Screen,
+                RootFolderName = _ctx.RootFolderName,
                 StoryText = _ctx.StoryText,
             }).AddTo(this);
         }

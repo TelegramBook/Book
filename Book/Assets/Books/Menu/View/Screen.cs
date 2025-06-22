@@ -85,7 +85,6 @@ namespace Books.Menu.View
                 if (header.ToLower() == "постер") posterPath = $"{storyManifest.StoryPath}/{body}";
                 if (header.ToLower() == "аннотация") description = body;
             }
-            
 
             var posterImage = await Cacher.GetTextureAsync(posterPath);
 

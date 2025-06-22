@@ -12,5 +12,8 @@ namespace Books.Story
         Music,
 
         Sound,
+
+        Location,
+        Локация,
     }
 }

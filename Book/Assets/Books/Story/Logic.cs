@@ -13,6 +13,7 @@ namespace Books.Story
         public struct Ctx
         {
             public View.IScreen Screen;
+            public string RootFolderName;
             public string StoryText;
         }
 
@@ -35,6 +36,7 @@ namespace Books.Story
             story.Continue();
 
             _ctx.Screen.SetCloseAction(onDone);
+            _ctx.Screen.HideLocationImmediate();
 
             _mainCharacter = string.Empty;
             while (!IsDisposed)

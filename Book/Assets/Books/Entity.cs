@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using Shared.Disposable;
 using Shared.LocalCache;
 using System;
+using static Books.Menu.Entity;
 
 namespace Books 
 {
@@ -38,7 +39,7 @@ namespace Books
                 }
 
                 var done = false;
-                using (var storyScreen = await ShowStory($"{storyManifest.Value.StoryPath}/Story.json", () => { done = true; })) 
+                using (var storyScreen = await ShowStory(storyManifest.Value.StoryPath, () => { done = true; })) 
                 {
                     while (!done) await UniTask.Yield();
                 }
@@ -67,19 +68,19 @@ namespace Books
         {
             await _loading.Show();
 
-            var storyText = await Cacher.GetTextAsync(storyPath);
+            var storyText = await Cacher.GetTextAsync($"{storyPath}/Story.json");
 
             var storyScreen = new Story.Entity(new Story.Entity.Ctx
             {
                 Data = _ctx.Data.StoriesData,
+                RootFolderName = storyPath,
                 StoryText = storyText,
             }).AddTo(this);
 
             storyScreen.ShowImmediate();
+            storyScreen.ShowStoryProcess(onDone).Forget();
 
             await _loading.Hide();
-
-            storyScreen.ShowStoryProcess(onDone).Forget();
 
             return storyScreen;
         }
